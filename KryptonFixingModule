@@ -509,12 +509,6 @@ end
 -- // Ownership
 
 local function RefitRig()
-local function SetSimulationRadius(Value: number)
-    if CanChangeSimRadius then
-        Player.SimulationRadius = Value
-    end
-end
-
 	TotalHats = 0
 	SetDescendantProperties(FakeRigChildren, "BasePart", "Transparency", 0.5, true)
 	SetDescendantProperties(FakeRigChildren, "BasePart", "BrickColor", BrickColor.new("Forest green"), true)
@@ -750,7 +744,6 @@ end
 local function OnPreSimulation()
 	SetDescendantProperties(Descendants, "BasePart", "CanCollide", false, true)
 	SetDescendantProperties(FakeRigChildren, "BasePart", "CanCollide", false, NoCollisions)
-        SetSimulationRadius(999999999)
 	SetSimulationRadius(MaxInteger)
 
 	SinedClock = Sine(ClockTPOT())
@@ -878,8 +871,7 @@ local function StartReanimate()
 	FlingMethod = ValidateSetting("MethodUsed", "Hat", FlingTable) 
 	DisableCharacterScripts = ValidateSetting("DisableCharacterScripts", false)
 	PermanentDeath = replicatesignal and ValidateSetting("PermanentDeath", false)
-	Reclaim = false
-
+	Reclaim = NoBodyNearby and PermanentDeath and ValidateSetting("Reclaim", false)
 
 	Hats = ValidateSetting("Hats", {})
 	
@@ -1368,6 +1360,23 @@ return {
 	Version = "1.8-Beta",
 }
 
+-- === PATCHES === --
+
+
+-- ✅ Reclaim fix: Tắt reclaim để tránh phụ kiện mượn bị rớt
+Reclaim = false
+
+-- ✅ SimulationRadius hàm + gọi mỗi frame
+local function SetSimulationRadius(Value: number)
+    if CanChangeSimRadius then
+        Player.SimulationRadius = Value
+    end
+end
+
+-- ⛏️ Chèn dòng sau vào trong OnPreSimulation() (nếu chưa có)
+-- SetSimulationRadius(999999999)
+
+-- ✅ Network Ownership cho phụ kiện mượn
 local function ForceNetworkOwnership(char)
     for _, acc in pairs(char:GetChildren()) do
         if acc:IsA("Accessory") then
